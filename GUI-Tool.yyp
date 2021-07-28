@@ -1,11 +1,20 @@
 {
   "resources": [
+    {"id":{"name":"sprButtonReset","path":"sprites/sprButtonReset/sprButtonReset.yy",},"order":7,},
     {"id":{"name":"Support","path":"scripts/Support/Support.yy",},"order":1,},
+    {"id":{"name":"sprTitleBar","path":"sprites/sprTitleBar/sprTitleBar.yy",},"order":2,},
+    {"id":{"name":"NineSliceBoxStretched","path":"scripts/NineSliceBoxStretched/NineSliceBoxStretched.yy",},"order":5,},
     {"id":{"name":"fntGUItitle","path":"fonts/fntGUItitle/fntGUItitle.yy",},"order":2,},
     {"id":{"name":"GuiStaticWindow","path":"scripts/GuiStaticWindow/GuiStaticWindow.yy",},"order":3,},
     {"id":{"name":"oGUI","path":"objects/oGUI/oGUI.yy",},"order":0,},
+    {"id":{"name":"sprButtonOverlap","path":"sprites/sprButtonOverlap/sprButtonOverlap.yy",},"order":5,},
+    {"id":{"name":"sprButtonClose","path":"sprites/sprButtonClose/sprButtonClose.yy",},"order":6,},
+    {"id":{"name":"GuiElements","path":"scripts/GuiElements/GuiElements.yy",},"order":6,},
+    {"id":{"name":"sprButtonPinned","path":"sprites/sprButtonPinned/sprButtonPinned.yy",},"order":4,},
+    {"id":{"name":"sprButtonClosed","path":"sprites/sprButtonClosed/sprButtonClosed.yy",},"order":3,},
     {"id":{"name":"fntGUIbody","path":"fonts/fntGUIbody/fntGUIbody.yy",},"order":1,},
     {"id":{"name":"GuiDynamicWindow","path":"scripts/GuiDynamicWindow/GuiDynamicWindow.yy",},"order":2,},
+    {"id":{"name":"sprNineSlice","path":"sprites/sprNineSlice/sprNineSlice.yy",},"order":1,},
     {"id":{"name":"Demo","path":"rooms/Demo/Demo.yy",},"order":0,},
   ],
   "Options": [

@@ -4,22 +4,30 @@
 /// @param _y Initial y position (top left)
 /// @param _w Default width
 /// @param _h Default height
-function GuiStaticWindow(_name, _x, _y, _w, _h) constructor {
+function GuiStaticWindow(_name, _xstart, _ystart, _default_width, _default_height, _nine_slice_sprite, _title_bar_sprite) constructor {
 	name = _name;
-	x = _x;
-	y = _y;
+	x = _xstart;
+	y = _ystart;
 	depth = -y;
-	def_width = _w;
-	def_height = _h;
-	width = def_width;
-	height = def_height;
-	margin = 10;
-	padding = 10;
+	def_width = _default_width;
+	def_height = _default_height;
+	width = _default_width;
+	height = _default_height;
+	sprite = _nine_slice_sprite;
+	title = _title_bar_sprite;
+	title_height = sprite_get_height(_title_bar_sprite);
+	padding = title_height/3;
+	margin = padding;
+	
+	close = {
+		sprite: sprButtonClose,
+		position: 1,
+		hover: false
+	}
+	
+	button_shelf = 5;
 	border = 2;
-	title_bar = 20;
 	scroll_bar = 5;
-	min_width = title_bar*2;
-	min_height = min_width;
 	
 	static xscale = 1;
 	static yscale = 1;
@@ -44,32 +52,58 @@ function GuiStaticWindow(_name, _x, _y, _w, _h) constructor {
 		return point_in_rectangle(_mx, _my, x, y, x2(), y2());
 	}
 	
-	static mouseClose = function(_mx, _my) {
-		return mouse_check_button_pressed(mb_left) && point_in_rectangle(_mx, _my, x2()-title_bar, y, x2(), y+title_bar);
+	#region Close Button
+	static hoverClose = function(_mx, _my) {
+		close.hover = point_in_rectangle(_mx, _my, x2()-padding-gui_window_button_width*close.position, y+button_shelf, x2()-padding-(gui_window_button_width*(close.position-1)), y+button_shelf+gui_window_button_height);
+		return close.hover;
 	}
 	
+	static mouseClose = function(_mx, _my) {
+		return hoverClose(_mx, _my) && mouse_check_button_pressed(mb_left);
+	}
+	
+	static drawButtonClose = function() {
+		draw_sprite_ext(close.sprite, close.hover ? 1:0, x2()-padding-(gui_window_button_width*close.position), y+button_shelf, xscale, yscale, 0, c_white, 1);
+	}
+	#endregion
+	
 	static draw = function() {
-		// Draw Background
-		draw_set_alpha(0.6);
-		draw_set_color(c_dkgray);
-		draw_rectangle(x, y, x2(), y2(), false);
-		// Draw Content Area
-		draw_rectangle(x+padding, y+title_bar+padding, x2()-padding, y2()-padding, false);
-
-		// Draw Title Bar
-		draw_set_alpha(0.75);
-		draw_set_color(c_ltgray);
-		draw_rectangle(x, y, x2()-title_bar, y+title_bar, false);
-		// Draw Title Name
+		drawWindow();
+		drawTitleBar();
+		drawTitleName();
+		drawButtonClose();
+		draw_set_alpha(1);
+		draw_set_color(c_white);
+	}
+	
+	static drawWindow = function() {
+		NineSliceBoxStretched(sprite, x, y, x2(), y2(), 0);
+	}
+	
+	static drawTitleBar = function() {
+		NineSliceBoxStretched(title, x, y, x2(), y+title_height, 0);
+	}
+	
+	static drawTitleName = function() {
 		draw_set_color(c_black);
 		draw_set_font(global.gui_window_title_font);
 		draw_set_halign(fa_left);
 		draw_set_valign(fa_top);
-		draw_text(x, y, name);
-
-		// Draw Close Button
-		draw_set_color(c_red);
-		draw_rectangle(x2()-title_bar, y, x2(), y+title_bar, false);
+		draw_text(x+padding, y+(padding*0.5), name);
 	}
+	
+	#region Debugging Functions
+	static debugDrawCloseButton = function() {
+		draw_set_color(c_red);
+		draw_set_alpha(0.7);
+		draw_rectangle(x2()-padding-(gui_window_button_width*close.position), y+button_shelf, x2()-padding-(gui_window_button_width*(close.position-1)), y+button_shelf+gui_window_button_height, false);
+		draw_set_color(c_white);
+		draw_set_alpha(1);
+	}
+	
+	static debugDrawContentArea = function() {
+		draw_rectangle(x+padding, y+title_height+padding, x2()-padding, y2()-padding, false);
+	}
+	#endregion
 	
 }

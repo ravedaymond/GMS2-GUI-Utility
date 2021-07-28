@@ -4,80 +4,110 @@
 /// @param _y Initial y position (top left)
 /// @param _w Default width
 /// @param _h Default height
-function GuiDynamicWindow(_name, _x, _y, _w, _h) : GuiStaticWindow(_name, _x, _y, _w, _h) constructor {
+function GuiDynamicWindow(_name, _xstart, _ystart, _default_width, _default_height, _nine_slice_sprite, _title_bar_sprite) : GuiStaticWindow(_name, _xstart, _ystart, _default_width, _default_height, _nine_slice_sprite, _title_bar_sprite) constructor {
 	
-	resize_box = 10;
+	#region Attribute Override
+	min_width = string_width(_name)+padding*2+gui_window_button_width*5;
+	min_height = min_width;
+	if(min_width > def_width) {
+		def_width = min_width;
+		width = min_width;
+	}
+	if(min_height > def_height) {
+		def_height = min_height;
+		height = min_height;
+	}
+	#endregion
+	
+	overlap = {
+		sprite: sprButtonOverlap,
+		position: 2,
+		hover: false,
+		enabled: false
+	}
+	
+	pinned = {
+		sprite: sprButtonPinned,
+		position: 3,
+		hover: false,
+		enabled: false
+	}
+	
+	reset = {
+		sprite: sprButtonReset,
+		position: 4,
+		hover: false
+	}
 
-	overlapLock = false;
-	overlapLockHover = false;
-	pinned = false;
-	pinnedHover = false;
-	
-	static xscale = 1;
-	static yscale = 1;
-	
-	static setXscale = function(_xscale) {
-		xscale = _xscale;	
+	static mouseGrab = function(_mx, _my) {
+		return !pinned.enabled && mouse_check_button_pressed(mb_left) && point_in_rectangle(_mx, _my, x, y, x2(), y+title_height);	
 	}
 	
-	static setYscale = function(_yscale) {
-		yscale = _yscale;	
+	static mouseResize = function(_mx, _my) {
+		return !pinned.enabled && mouse_check_button_pressed(mb_left) && point_in_rectangle(_mx, _my, x2()-padding, y2()-padding, x2(), y2());
 	}
 	
-	static resetToDefault = function() {
+	static resetSize = function() {
 		width = def_width;
 		height = def_height;
 	}
 	
-	static x2 = function() {
-		return x+width;
+	#region Overlap Button
+	static hoverOverlap = function(_mx, _my) {
+		overlap.hover = point_in_rectangle(_mx, _my, x2()-padding-(gui_window_button_width*overlap.position), y+button_shelf, x2()-padding-(gui_window_button_width*(overlap.position-1)), y+button_shelf+gui_window_button_height);
+		return overlap.hover;
 	}
 	
-	static y2 = function() {
-		return y+height;
-	}
-	
-	static mouseOver = function(_mx, _my) {
-		return point_in_rectangle(_mx, _my, x, y, x2(), y2());
-	}
-	
-	static mouseClose = function(_mx, _my) {
-		return mouse_check_button_pressed(mb_left) && point_in_rectangle(_mx, _my, x2()-title_bar, y, x2(), y+title_bar);
-	}
-	
-	static mouseGrab = function(_mx, _my) {
-		return !pinned && mouse_check_button_pressed(mb_left) && point_in_rectangle(_mx, _my, x, y, x2()-title_bar, y+title_bar);	
-	}
-	
-	static mouseResize = function(_mx, _my) {
-		return mouse_check_button_pressed(mb_left) && point_in_rectangle(_mx, _my, x2()-resize_box, y2()-resize_box, x2(), y2());
-	}
-	
-	static hoverOverlapLock = function(_mx, _my) {
-		overlapLockHover = point_in_rectangle(_mx, _my, x2()-(title_bar*2), y, x2()-title_bar, y+title_bar);
-		return overlapLockHover;
-	}
-	
-	static mouseOverlapLock = function(_mx, _my) {
-		var retval = hoverOverlapLock(_mx, _my) && mouse_check_button_pressed(mb_left);
+	static mouseOverlap = function(_mx, _my) {
+		var retval = hoverOverlap(_mx, _my) && mouse_check_button_pressed(mb_left);
 		if(retval) {
-			overlapLock = !overlapLock;	
+			overlap.enabled = !overlap.enabled;
 		}
 		return retval;
 	}
 	
+	static drawButtonOverlap = function() {
+		var index = overlap.enabled ? 1:0;
+		if(overlap.hover) index = index == 1 ? 0 : 1;
+		draw_sprite_ext(overlap.sprite, index, x2()-padding-(gui_window_button_width*overlap.position), y+button_shelf, xscale, yscale, 0, c_white, 1);
+	}
+	#endregion
+	
+	#region Pinned Button
 	static hoverPinned = function(_mx, _my) {
-		pinnedHover = point_in_rectangle(_mx, _my, x2()-(title_bar*3), y, x2()-(title_bar*2), y+title_bar);
-		return pinnedHover;
+		pinned.hover = point_in_rectangle(_mx, _my, x2()-padding-(gui_window_button_width*pinned.position), y+button_shelf, x2()-padding-(gui_window_button_width*(pinned.position-1)), y+button_shelf+gui_window_button_height);
+		return pinned.hover;
 	}
 	
 	static mousePinned = function (_mx, _my) {
 		var retval = hoverPinned(_mx, _my) && mouse_check_button_pressed(mb_left);
 		if(retval) {
-			pinned = !pinned;
+			pinned.enabled = !pinned.enabled;
 		}
 		return retval;
 	}
+	
+	static drawButtonPinned = function() {
+		var index = pinned.enabled ? 1:0;
+		if(pinned.hover) index = index == 1 ? 0 : 1;
+		draw_sprite_ext(pinned.sprite, index, x2()-padding-(gui_window_button_width*pinned.position), y+button_shelf, xscale, yscale, 0, c_white, 1);
+	}
+	#endregion
+	
+	#region Reset Button
+	static hoverReset = function(_mx, _my) {
+		reset.hover = point_in_rectangle(_mx, _my, x2()-padding-gui_window_button_width*reset.position, y+button_shelf, x2()-padding-(gui_window_button_width*(reset.position-1)), y+button_shelf+gui_window_button_height);
+		return reset.hover;
+	}
+	
+	static mouseReset = function(_mx, _my) {
+		return hoverReset(_mx, _my) && mouse_check_button_pressed(mb_left);
+	}
+	
+	static drawButtonReset = function() {
+		draw_sprite_ext(reset.sprite, reset.hover ? 1:0, x2()-padding-(gui_window_button_width*reset.position), y+button_shelf, xscale, yscale, 0, c_white, 1);
+	}
+	#endregion
 	
 	static resize = function(_mx, _my) {
 		draw_set_alpha(0.45);
@@ -88,79 +118,46 @@ function GuiDynamicWindow(_name, _x, _y, _w, _h) : GuiStaticWindow(_name, _x, _y
 	}
 	
 	static draw = function() {
-		drawBackground();
-		drawContentArea();
+		drawWindow();
 		drawTitleBar();
 		drawTitleName();
-		drawCloseButton();
-		drawPinnedButton();
-		drawOverlapLockButton();
-		drawResizeCorner();
+		drawButtonClose();
+		drawButtonOverlap();
+		drawButtonPinned();
+		drawButtonReset();
 		draw_set_alpha(1);
-		draw_set_color(c_white);	
+		draw_set_color(c_white);
 	}
 	
-	static drawBackground = function() {
-		draw_set_alpha(0.6);
-		draw_set_color(c_dkgray);
-		draw_rectangle(x, y, x2(), y2(), false);	
+	// @Override
+	static drawWindow = function() {
+		NineSliceBoxStretched(sprNineSlice, x, y, x2(), y2(), 4);
 	}
 	
-	static drawContentArea = function() {
-		draw_rectangle(x+padding, y+title_bar+padding, x2()-padding, y2()-padding, false);
-	}
-	
-	static drawTitleBar = function() {
-		draw_set_alpha(0.75);
-		draw_set_color(c_ltgray);
-		draw_rectangle(x, y, x2()-title_bar, y+title_bar, false);
-	}
-	
-	static drawTitleName = function() {
-		draw_set_color(c_black);
-		draw_set_font(global.gui_window_title_font);
-		draw_set_halign(fa_left);
-		draw_set_valign(fa_top);
-		draw_text(x, y, name);
-	}
-	
-	static drawCloseButton = function() {
+	#region Debugging Functions	
+	static debugDrawResizeCorner = function() {
 		draw_set_color(c_red);
-		draw_rectangle(x2()-title_bar, y, x2(), y+title_bar, false);	
+		draw_set_alpha(0.7);
+		draw_rectangle(x2()-padding, y2()-padding, x2(), y2(), false);
+		draw_set_color(c_white);
+		draw_set_alpha(1);
 	}
 	
-	static drawPinnedButton = function() {
-		if(pinned) {
-			draw_set_color(c_lime);
-			if(pinnedHover) {
-				draw_set_color(c_olive);	
-			}
-		} else {
-			draw_set_color(c_olive);
-			if(pinnedHover) {
-				draw_set_color(c_lime);
-			}
-		}
-		draw_rectangle(x2()-(title_bar*3), y, x2()-(title_bar*2), y+title_bar, false);
-	}
-	static drawOverlapLockButton = function() {
-		if(overlapLock) {
-			draw_set_color(c_orange);
-			if(overlapLockHover) {
-				draw_set_color(c_blue);
-			}
-		} else {
-			draw_set_color(c_blue);
-			if(overlapLockHover) {
-				draw_set_color(c_orange);	
-			}
-		}
-		draw_rectangle(x2()-(title_bar*2), y, x2()-title_bar, y+(title_bar), false);	
+	static debugDrawOverlapButton = function() {
+		draw_set_color(c_orange);
+		draw_set_alpha(0.7);
+		draw_rectangle(x2()-padding-(gui_window_button_width*overlap.position), y+button_shelf, x2()-padding-(gui_window_button_width*(overlap.position-1)), y+button_shelf+gui_window_button_height, false);
+		draw_set_color(c_white);
+		draw_set_alpha(1);
 	}
 	
-	static drawResizeCorner = function() {
-		draw_set_color(c_red);
-		draw_rectangle(x2()-resize_box, y2()-resize_box, x2(), y2(), false);
+	static debugDrawPinnedButton = function(position) {
+		draw_set_color(c_lime);
+		draw_set_alpha(0.7);
+		draw_rectangle(x2()-padding-(gui_window_button_width*pinned.position), y+button_shelf, x2()-padding-(gui_window_button_width*(pinned.position-1)), y+button_shelf+gui_window_button_height, false);
+		draw_set_color(c_white);
+		draw_set_alpha(1);
 	}
+	#endregion
 	
 }
